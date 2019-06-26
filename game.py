@@ -32,8 +32,7 @@ class Game:
 
     def move(self, key, action=None, mode='agent'):
         if mode == 'random':
-            free_spots = self.get_free_spots()
-            action = random.choice(free_spots)
+            action = random.choice(self.get_free_spots())
             self.board[action[0]][action[1]] = key
         else:
             row = action[0]
@@ -65,7 +64,7 @@ class Game:
         flat_state = reduce(lambda x, y: x + y, self.board)
         return ''.join(flat_state)
 
-    def play(self, mode='random'):
+    def play(self, mode='random', Q=None):
         player_turn = False if np.random.random() < 0.5 else True
 
         while True:
@@ -89,6 +88,14 @@ class Game:
                 print "Opponent's turn."
                 if mode == 'random':
                     self.move('O', mode='random')
+                elif mode == 'agent':
+                    state = self.get_state()
+                    action = self.actions[np.argmax(Q[state])]
+
+                    # If agent selects a filled spot, choose a random free one
+                    if action not in self.get_free_spots():
+                        action = random.choice(self.get_free_spots())
+                    self.move('O', action=action, mode='agent')
 
                 player_turn = not player_turn
 
